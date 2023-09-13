@@ -1,0 +1,81 @@
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.utils.checkpoint as cp
+from model.block import *
+
+
+class SegModel(nn.Module):
+    def __init__(self, in_channels, classes):
+        super(SegModel, self).__init__()   # inherit nn.Module class
+        self.classes = classes
+        self.in_channels = in_channels
+
+        # encoding
+        self.Cov = DoubleConv(self.in_channels, 64)
+
+        self.psp1 = PSPool(64) # psp block
+        self.Cov1 = DoubleConv(64, 128)
+
+        # self.psp2 = PSPool(128) # psp block
+        # self.Cov2 = DoubleConv(128, 256)
+        
+        self.down2 = DownSample(128, 256)
+        self.down3 = DownSample(256, 512)
+        self.down4 = DownSample(512, 1024)
+
+        # decoding
+        self.up1 = UpSample(1024,512)
+        self.up2 = UpSample(512,256)
+        self.up3 = UpSample(256,128)
+        self.up4 = UpSample(128,64)
+
+        # head
+        self.out = outConv(64, self.classes)
+
+    def forward(self, x):
+        
+        x1 = self.Cov(x)
+
+        x2 = self.psp1(x1) # psp1
+        x2 = self.Cov1(x2)
+
+        # x3 = self.psp2(x2) # psp2
+        # x3 = self.Cov2(x3)
+        x3 = self.down2(x2)
+
+        x4 = self.down3(x3)
+
+        x5 = self.down4(x4)
+
+        x6 = self.up1(x4, x5)
+        x7 = self.up2(x3, x6)
+        x8 = self.up3(x2, x7)
+        x9 = self.up4(x1, x8)
+
+        x10 = self.out(x9)
+
+        return x10
+    
+    
+class ResUNet(nn.Module):
+    def __init__(self, in_channels, classes):
+        super(ResUNet, self).__init__()
+        self.classes = classes
+        self.in_channels = in_channels
+        self.out = outConv(64, self.classes)
+
+        self.up1 = UpSample(1024, 512)
+        self.up2 = UpSample(512, 256)
+        self.up3 = UpSample(256, 128)
+        self.up4 = UpSample(128, 64)
+
+    def forward(self, x):
+        [x1, x2, x3, x4, x5] = ResNet50Encoder(in_channel=self.in_channels)(x)
+        x6 = self.up1(x4, x5)
+        x7 = self.up2(x3, x6)
+        x8 = self.up3(x2, x7)
+        x9 = self.up4(x1, x8)
+        x10 = self.out(x9)
+        return x10   
+
+
