@@ -13,6 +13,8 @@ def get_args():
     parser.add_argument('--val_scale', type=float, default=0.1)
 
     # train
+    parser.add_argument('--model', type=str, default='Unet')
+    parser.add_argument('--device', type=str, default='cuda:0')
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--batch_size', type=int, default=16)
     parser.add_argument('--lr', type=float, default=1e-4)

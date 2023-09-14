@@ -65,9 +65,9 @@ def train_model(model, device, epoch, batch_size, lr, args):
                     # predict
                     pre = model(images) # out: ( N C H W)
                     # current batch loss
-                    # loss = loss_func(pre, masks) # softmax + CEloss
-                    loss = Dice_loss(masks, pre, args.classes)
-                    loss = loss.to(device=device, dtype=torch.float32)
+                    loss = loss_func(pre, masks) # softmax + CEloss
+                    # loss = Dice_loss(masks, pre, args.classes)
+                    # loss = loss.to(device=device, dtype=torch.float32)
 
                 scaler.scale(loss).backward() # backward loss
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1) # clip grad
@@ -130,6 +130,7 @@ if __name__ == '__main__':
     
     ##### get args #####
     args = get_args()
+    device = args.device
 
     ##### set device #####
     torch.cuda.empty_cache()
@@ -138,7 +139,8 @@ if __name__ == '__main__':
         print(" train use gpu : {}".format(device))
     else:
         device = torch.device('cpu')
-
+        print(" train use cpu ")
+    
     ##### spilt_set ##### 
     if args.if_spilt :
         spilttool = CropSpiltTool()
@@ -149,11 +151,9 @@ if __name__ == '__main__':
                             split_total_num=args.target_num)
 
     ##### model #####
-    model = ResUNet(args.in_channels, args.classes)
-    # summary(model=model, input_size=256, batch_size=args.batch_size)
-    # model = SegModel(args.in_channels, args.classes)
-    model = model.to(device=device,  # to gpu
-                     memory_format=torch.channels_last)  # set model weight format -> torch.cuda.FloatTensor
+    model = ResUNet(args.in_channels, args.classes, args.device)
+    model = model.to(device=device, memory_format=torch.channels_last)  # set model weight format -> torch.cuda.FloatTensor
+    summary(model=model, input_size=(3,256,256))
         
     ##### train #####
     train_model( model=model, 
