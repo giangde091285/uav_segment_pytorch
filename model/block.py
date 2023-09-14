@@ -175,7 +175,7 @@ class Bottleneck(nn.Module):
         factor = 2
 
         self.conv1 = nn.Conv2d(kernel_size=1, stride=1, in_channels=in_channel, out_channels=out_channel)
-        self.conv2 = nn.Conv2d(kernel_size=3, stride=stride, in_channels=out_channel, out_channels=out_channel)
+        self.conv2 = nn.Conv2d(kernel_size=3, stride=stride, padding=1, in_channels=out_channel, out_channels=out_channel)
         self.conv3 = nn.Conv2d(kernel_size=1, stride=1, in_channels=out_channel, out_channels=out_channel*factor)
         self.conv_x = nn.Conv2d(kernel_size=1, stride=stride, in_channels=in_channel, out_channels=out_channel*factor)
 
@@ -186,17 +186,16 @@ class Bottleneck(nn.Module):
 
     def forward(self, x):
 
-        x_input = x
         x_add = self.lay_x(x)
 
         x = self.lay_1(x)
         x = self.lay_2(x)
         x = self.lay_3(x)
-        # x = x_add + x_input
-        x = torch.add(input=x_add, alpha=1, other=x_input)
-        x = nn.ReLU(inplace=True)(x)
 
-        return x
+        x1 = torch.add(input=x, alpha=1, other=x_add)
+        x1 = nn.ReLU(inplace=True)(x1)
+
+        return x1
 
 
 class ResNet50Encoder(nn.Module):
@@ -205,11 +204,14 @@ class ResNet50Encoder(nn.Module):
 
         # stage 0
         self.stage0 = nn.Sequential(
-            nn.Conv2d(in_channels=in_channel,out_channels=64,kernel_size=7,stride=2,padding=3,bias=False),
+            nn.Conv2d(in_channels=in_channel, out_channels=64,
+                      kernel_size=7, stride=1, padding=3),
             nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2)  # (256,256)->(128,128)
+            nn.ReLU(inplace=True)
         )
+
+        self.pool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) # (256,256)->(128,128)
+
         # stage 1
         self.stage1_1 = Bottleneck(in_channel=64, out_channel=64, stride=1)    # 64,64,64,128
         self.stage1_2 = Bottleneck(in_channel=128, out_channel=64, stride=1)   # 128,64,64,128
@@ -239,7 +241,8 @@ class ResNet50Encoder(nn.Module):
 
         x = self.stage0(x)
         x1 = x  # (256,256,64)
-
+        
+        x = self.pool(x)
         x = self.stage1_1(x)
         x = self.stage1_2(x)
         x = self.stage1_3(x)
