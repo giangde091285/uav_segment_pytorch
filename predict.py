@@ -4,92 +4,58 @@ from PIL import Image
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
-from utils.load_data import * 
-from utils.spilt_set import * 
+from utils.dataset_load import * 
+from utils.dataset_spilt import * 
 
 from model.seg_model import *
-from utils.acc_func import *
+from utils.precision_eval import *
 
 from opt import *
 import os
 
-def predict(model, img_path, mask_path, output_dir):
-    
-    model.eval()
-    # read img
-    img = Image.open(img_path)
-    gt_mask = Image.open(mask_path)
-   
-    # pre process
-    img_tensor = transforms.ToTensor()(img.copy()).unsqueeze(0)  # PIL [0,255] (H W C) -> tensor [0,1] (B=1 C H W)
-    gt_mask_tensor = torch.as_tensor(np.array(gt_mask.copy()),dtype=torch.long) #(H W)
-
-    # get unique values of gt
-    unique_value = torch.unique(gt_mask_tensor)
-  
-    with torch.no_grad():
-        # predict
-        pre_mask_tensor = model(img_tensor).cpu() #（B=1 C H W）
-
-        # (B=1 C H W) -> (C H W) -> (H W)
-        pre_mask_tensor = pre_mask_tensor.squeeze(0)
-        pre_mask_tensor = torch.argmax(pre_mask_tensor, dim=0)
-
-        pre_mask_array = np.asarray(pre_mask_tensor, dtype=np.uint8)
-        gt_mask_array = np.asarray(gt_mask_tensor, dtype=np.uint8)
-   
-        # cal acc
-        iou_Mean, iou = mIOU(gt= gt_mask_array, 
-                             pre= pre_mask_array,
-                             class_num=8,
-                             unique_value=unique_value) 
-    
-        # save pred_mask
-        res=Image.fromarray(pre_mask_array)
-        res.save(os.path.join(output_dir, "pre.png"))
-
-    return iou_Mean, iou
-    
-def predict_testset(args):
+def PredictSet(model, device, args):
     model.eval() 
-    test_dataloader = DataLoader(CusDataset("val"), batch_size=1, shuffle=False, drop_last=False, pin_memory=True)
-    miou = 0
-    miou_list = np.zeros(args.classes, dtype=np.float64)
-    class_unique = np.zeros(args.classes, dtype=np.int64)
+    test_dataloader = DataLoader(CusDataset("test"), batch_size=1, shuffle=False, drop_last=False, pin_memory=True)
+    iou_list = np.zeros(shape=(args.classes),dtype=np.float16)
+    acc_list = np.zeros(shape=(args.classes),dtype=np.float16)
+    i = 0
+    af = AccFunc()
     for batch in tqdm(test_dataloader, unit='batch', total=len(test_dataloader)):
         images, masks = batch['img'], batch['mask']
         # copy to gpu
-        images = images.to(device=device, dtype=torch.float32,
-                            memory_format = torch.channels_last)  
+        images = images.to(device=device, dtype=torch.float32, memory_format = torch.channels_last)  
         masks = masks.to(device = device, dtype = torch.long)
-        unique_value = torch.unique(masks)
-                
         with torch.no_grad():        
             # predict
             pre_mask_tensor = model(images)
-            pre_mask_tensor = pre_mask_tensor.squeeze(0)
-            pre_mask_tensor = torch.argmax(pre_mask_tensor, dim=0)
+            mask_true = F.one_hot(masks, args.classes).permute(0, 3, 1, 2).float()  # (1,C,H,W)
+            mask_pred = F.one_hot(pre_mask_tensor.argmax(dim=1), args.classes).permute(0, 3, 1, 2).float()  #(1,C,H,W)
+            # iou_mean= multiclass_iou(mask_pred, mask_true, reduce_batch_first=False)
 
-            pre_mask_array = np.asarray(pre_mask_tensor, dtype=np.uint8)
-            gt_mask_array = np.asarray(masks, dtype=np.uint8)
-   
-            # cal acc
-            iou_Mean, iou = mIOU(gt= gt_mask_array, 
-                                pre= pre_mask_array,
-                                class_num=8,
-                                unique_value=unique_value) 
+            mask_true = torch.argmax(mask_true, dim=1)
+            mask_pred = torch.argmax(mask_pred, dim=1)
+            iou_list += af.IOU(mask_true, mask_pred, args.classes)
+            acc_list += af.OA(mask_true, mask_pred, args.classes)
             
-            for i in range(0, len(iou)):
-                miou_list[i] += iou[i]
-                if i in unique_value:
-                    class_unique[i] += 1
+            if args.ifsave :
+                # (1,c,h,w) -> (1,h,w) -> (h,w)
+                pre_mask_array = np.asarray(pre_mask_tensor.cpu().argmax(dim=1).squeeze(dim=0), dtype=np.uint8)
+                pre_mask_pil = Image.fromarray(pre_mask_array)
+                
+                if os.path.isdir(args.output_dir):
+                    pass
+                else:
+                    os.mkdir(args.output_dir)
+                mask_list = os.listdir(r"data_process/dataset/test/mask")
+                pre_mask_pil.save(os.path.join(args.output_dir, ("pre_" + mask_list[i])))
 
-            miou += iou_Mean
+        i += 1
 
-    miou /= len(test_dataloader)
-    miou_list = np.divide(miou_list, (class_unique+1e-8))
-
-    return miou, miou_list, class_unique
+    iou_list /= len(test_dataloader)
+    acc_list /= len(test_dataloader)
+    class_miou = np.sum(iou_list)/args.classes
+    class_macc = np.sum(acc_list)/args.classes
+    return [iou_list, class_miou, acc_list, class_macc]
 
          
 
@@ -97,33 +63,34 @@ if __name__ == '__main__':
 
     ##### get args #####
     args = get_args()
-
-    torch.cuda.empty_cache()
-
-    # img_path = './data_process/dataset/test/img/1366_5.png'
-    # mask_path = './data_process/dataset/test/mask/1366_5.png'
-
-    # load model
-    model = U_net(in_channels=3, classes=8)
-    # model = SegModel(in_channels=3, classes=8)
-    device = torch.device('cpu')
-    model.to(device=device)
+   
+    ##### set device #####
+    if args.device != 'cpu' and torch.cuda.is_available():
+           device = torch.device(args.device)
+           print(" train use gpu : {}".format(device))
+    else:
+        device = torch.device('cpu')
+        print(" train use cpu ")
     
-    # load ckpt
+    ##### model #####
+    if args.model == 'U_net':
+        model = U_net(args.in_channels, args.classes)
+    elif args.model == 'ResUNet':
+        model = ResUNet(args.in_channels, args.classes, device)
+    else:
+       raise Exception('no such model!')
+    
+    ##### load ckpt #####
     state_dict = torch.load(args.ckpt_path, map_location=device)
     model.load_state_dict(state_dict)
 
-    # # # predict
-    # # iou_mean, iou = predict(model, 
-    # #                         img_path, 
-    # #                         mask_path, 
-    # #                         output_dir=args.output_dir)
+    model.to(device=device)
 
-    # print(iou_mean)
-    # print(iou)
-    
-    miou, miou_list, cu = predict_testset(args)
-    print(miou)
-    print(miou_list)
-    print(cu)
+    ##### predict #####
+    [iou_list, class_miou, acc_list, class_macc] = PredictSet(model, device, args)
+    print("iou={0}\n"
+          +"miou={1}\n"
+          +"acc={2}\n"
+          +"macc={3}".format(iou_list, class_miou, acc_list, class_macc))
+
 
