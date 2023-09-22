@@ -5,7 +5,6 @@ from torch import nn
 import torch.functional as F
 
 """
-
     loss function
 
     * dice loss 

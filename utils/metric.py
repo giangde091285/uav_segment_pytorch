@@ -19,8 +19,10 @@ class Metric(nn.Module):
 
     def cal_intersect_and_union(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
         # input (N C H W)-> (N H W C)-> (NHW C)-> (NHW)
-        input = input.permute(0, 2, 3, 1).flatten(0, 2)
-        input = torch.argmax(input, dim=1)
+
+        input = input.permute(0, 2, 3, 1)
+        input = torch.flatten(input, 0, 2)
+        input = torch.argmax(input, 1)
         input = torch.as_tensor(input, dtype=torch.float32)
         # target (N H W) -> (NHW)
         target = target.flatten(0, 2)
@@ -30,30 +32,31 @@ class Metric(nn.Module):
         intersect = torch.histc(intersect, class_num, min=0, max=class_num-1).cpu()  # torch.histc()只接受float类型的tensor
         # A = TP + FP
         tp_plus_fp = torch.histc(input, class_num, min=0, max=class_num - 1).cpu()
-        # B = TP + TN
-        tp_plus_tn = torch.histc(target, class_num, min=0, max=class_num - 1).cpu()
-        # A ∪ B
-        union = tp_plus_fp + tp_plus_tn - intersect
+        # B = TP + FN
+        tp_plus_fn = torch.histc(target, class_num, min=0, max=class_num - 1).cpu()
+        # A ∪ B = TP + FN + FP
+        union = tp_plus_fp + tp_plus_fn - intersect
       
-        return intersect, union, tp_plus_fp, tp_plus_tn
+        return intersect, union, tp_plus_fp, tp_plus_fn
 
     def IOU(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
-        # iou = (A ∩ B)/(A ∪ B) = TP/(TP+TN+FP)
+        # iou = (A ∩ B)/(A ∪ B) = TP/(TP+FN+FP)
         intersect, union, _, _= self.cal_intersect_and_union(input, target, class_num)
         iou = intersect/union
         return iou # (c)
     
     def DiceScore(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
-        # Dice = 2*(A ∩ B)/(A + B) = 2*TP/(2*TP+TN+FP)
+        # Dice = 2*(A ∩ B)/(A + B) = 2*TP/(2*TP+FN+FP)
         intersect, _, tp_plus_fp, tp_plus_fn = self.cal_intersect_and_union(input, target, class_num)
         dice = 2 * intersect/(tp_plus_fp + tp_plus_fn)
         return dice # (c)
     
     def Acc(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
-        # Acc = TP / total_num
-        intersect, _, _, _= self.cal_intersect_and_union(input, target, class_num)
+        # Acc = (TP+TN) / total_num
+        tp, tp_fp_fn , _, _ = self.cal_intersect_and_union(input, target, class_num)
         total_num = input.size(0) * input.size(2) * input.size(3)
-        acc = intersect/total_num
+        
+        acc = (total_num - tp_fp_fn + tp) / total_num
         return acc # (c)
 
 
