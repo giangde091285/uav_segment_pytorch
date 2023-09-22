@@ -202,10 +202,10 @@ class ResNet50Encoder(nn.Module):
     def __init__(self, in_channel):
         super(ResNet50Encoder, self).__init__()
 
-        # stage 0
+         # stage 0
         self.stage0 = nn.Sequential(
             nn.Conv2d(in_channels=in_channel, out_channels=64,
-                      kernel_size=7, stride=1, padding=3),
+                      kernel_size=3, stride=1, padding=1),  # 7*7 to 3*3
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True)
         )
@@ -243,6 +243,7 @@ class ResNet50Encoder(nn.Module):
         x1 = x  # (256,256,64)
         
         x = self.pool(x)
+
         x = self.stage1_1(x)
         x = self.stage1_2(x)
         x = self.stage1_3(x)
