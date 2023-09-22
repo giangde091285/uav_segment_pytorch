@@ -4,15 +4,21 @@ import os
 from torch.utils.data import DataLoader
 from utils.dataset_load import * 
 from utils.dataset_spilt import * 
-from utils.optimizer_load import *
-from utils.precision_eval import *
+from utils.optimizer import *
+from utils.metric import *
+from utils.loss import *
 from model.seg_model import *
 import wandb
 from tqdm import tqdm
 from opt import *
 from torchsummary import summary
 
+"""
+    train
 
+    * train/val dataset
+
+"""
 def train_model(model, device, args):
     
     ##### dataloader #####
@@ -23,7 +29,7 @@ def train_model(model, device, args):
     
     ##### wandb(log) #####
     # init : Start a new run to track and log to W&B.
-    exper = wandb.init(project='newproj', resume='allow', anonymous='must') 
+    exper = wandb.init(project=args.proj, resume='allow', anonymous='must') 
     # config ：track hyperparameters and metadata.
     exper.config.update(
         dict(model = model, 
@@ -41,7 +47,12 @@ def train_model(model, device, args):
     ##### learning rate #####
     scheduler = lrSchedulerTool(name=args.scheduler, args=args, opt=optimizer)
     ##### loss function #####
-    loss_func = LossFunc() # nn.CrossEntropyLoss include softmax！
+    if args.loss == 'celoss':
+        loss_f = nn.CrossEntropyLoss()
+    elif args.loss == 'DiceLoss':
+        loss_f = DiceLoss(class_num=args.classes)
+    else:
+        loss_f = FocalLoss(alpha=[1,1], gamma=2, class_num=args.classes)
     ##### amp #####
     scaler = torch.cuda.amp.GradScaler(enabled=True)
 
@@ -64,12 +75,8 @@ def train_model(model, device, args):
                 # use amp
                 with torch.autocast(device.type if device.type != 'mps' else 'cpu', enabled=True): 
                     # predict
-                    pre = model(images)  # out: ( N C H W)
-                    # current batch loss
-                    loss = loss_func.dice_loss(
-                            F.softmax(pre, dim=1).float(),
-                            F.one_hot(masks, args.classes).permute(0, 3, 1, 2).float(),   # .permute 维度换位置
-                            multiclass=True)
+                    pre = model(images)  # out: ( N C H W) 
+                    loss = loss_f(pre, masks)
                     
                 optimizer.zero_grad(set_to_none=True)
                 scaler.scale(loss).backward() # backward loss
@@ -104,11 +111,8 @@ def train_model(model, device, args):
 
                     v_res = model(v_img)
 
-                    v_mask = F.one_hot(v_mask, args.classes).permute(0, 3, 1, 2).float()  #（N H W）-> (N H W C) -> (N C H W)
-                    v_res = F.one_hot(v_res.argmax(dim=1), args.classes).permute(0, 3, 1, 2).float()
-
-                    dice_score = loss_func.dice_loss(v_res, v_mask, multiclass=True)
-                    v_loss_epoch += dice_score.item()
+                    v_loss = loss_f(v_res, v_mask)
+                    v_loss_epoch += v_loss.item()
                     
         model.train() # train mode
         v_loss_epoch = v_loss_epoch / len(val_dataloader)
@@ -164,7 +168,7 @@ if __name__ == '__main__':
        model.load_state_dict(ckpt)
 
     model = model.to(device=device, memory_format=torch.channels_last)  # set model weight format -> torch.cuda.FloatTensor
-    summary(model=model, input_size=(3,256,256))
+    summary(model=model, input_size=(3,512,512))
         
     ##### train #####
     train_model( model=model, device=device, args=args)
