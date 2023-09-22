@@ -3,6 +3,11 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from model.block import *
 
+"""
+    seg_model
+    * u_net (done)
+    * resnet50 + u_net
+"""
 
 class SegModel(nn.Module):
     def __init__(self, in_channels, classes):

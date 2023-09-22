@@ -2,6 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+"""
+    block
+    * conv/upsample/downsample layer (done)
+    * u_net (done)
+    * psp 
+    * resnet50 
+"""
+
 # DoubleCov Layer： (conv-> batch_norm -> ReLU)*2
 class DoubleConv (nn.Module):
     def __init__(self, in_channels, out_channels):
