@@ -64,24 +64,26 @@
 1. ***WHU Building Dataset (Satellite dataset I)***  
    [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
 * 数据集信息：  
-   |参数|具体设置|  
-   |:--:|:--:|  
-   |输入图片尺寸|（512, 512）|
-   |训练集数量|202张|
-   |验证集数量|66张|
-   |测试集数量|67张|
-   |类别数(含背景)|2|  
-
+   |输入图片尺寸|类别数(含背景)|训练集|验证集|测试集|
+   |:--:|:--:|:--:|:--:|:--:|   
+   |512*512|2|202张|66张|67张|
+  
 * 训练参数：
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型  
+   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型| 
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
+   |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
 * 训练曲线：
+![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/a4fd2895-af13-4d19-b9f2-e6bb958815fd)
+
+  
 * 可视化：
+
+
+
 * 测试结果:  
-   |实验编号|IOU(%)|Acc(%)|  
-   |:--:|:--:|:--:|   
-   |whu-1|96|98|  
+   |实验编号|IOU(%)|Dice(%)|Acc(%)|  
+   |:--:|:--:|:--:|:--:|  
+   |whu-1|96.09|97.99|98.58|  
   
 2. ***LoveDA Dataset***  
    [下载](http://junjuewang.top/)
