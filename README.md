@@ -32,14 +32,36 @@
 --predict.py
 
 ```
-* 网络结构：Unet, ResNet50(encoder)+Unet
-* 损失函数：Cross-Entropy loss, Dice loss, [](Focal loss)
-* 精度评定指标：IOU, Dice, Acc
+* 网络结构：Unet,  ResNet50(encoder)+Unet
+* 损失函数：Cross-Entropy loss,  Dice loss,  [Focal loss](https://github.com/RefineM/FocalLoss_multiclass)
+* 精度评定指标：IOU,  Dice-Score,  Acc
   
 ### 配置
 ### 测试
 1. ***WHU Building Dataset (Satellite dataset I)***  
-   http://gpcv.whu.edu.cn/data/building_dataset.html
+   [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
+* 数据集信息：  
+   |参数|具体设置|  
+   |:--:|:--:|  
+   |输入图片尺寸|（512, 512）|
+   |训练集数量|202张|
+   |验证集数量|66张|
+   |测试集数量|67张|
+   |类别数(含背景)|2|  
+
+* 训练参数：
+   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|  
+   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
+* 训练曲线：
+* 可视化：
+* 测试结果:  
+   |实验编号|IOU(%)|Acc(%)|  
+   |:--:|:--:|:--:|   
+   |whu-1|96|98|  
+  
+2. ***LoveDA Dataset***  
+   [下载](http://junjuewang.top/)
 * 数据集信息：  
    |参数|具体设置|  
    |:--:|:--:|  
@@ -55,27 +77,10 @@
    |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
 * 测试结果:
   
-   |实验编号|IOU|Acc|  
-   |:--:|:--:|  
-   |1|96|98|
-2. ***LoveDA Dataset***
-   http://junjuewang.top/
-* 数据集信息：  
-   |参数|具体设置|  
-   |:--:|:--:|  
-   |输入图片尺寸|（512, 512）|
-   |训练集数量|202张|
-   |验证集数量|66张|
-   |测试集数量|67张|
-   |类别数(含背景)|2|  
+   |实验编号|IOU(%)|Acc(%)|    
+   |:--:|:--:|:--:|    
+   |1|96|98|  
 
-* 训练参数：
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|  
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
-* 测试结果:
-  
-   |实验编号|IOU|Acc|  
-   |:--:|:--:|  
-   |1|96|98|
-   
+### 参考
+* https://github.com/milesial/Pytorch-UNet
+* https://github.com/open-mmlab/mmsegmentation
