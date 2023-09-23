@@ -38,4 +38,24 @@
   
 ### 配置
 ### 测试
-1. WHU
+1. WHU Building Dataset (Satellite dataset I)  
+   http://gpcv.whu.edu.cn/data/building_dataset.html
+* 数据集信息：  
+   |参数|具体设置|  
+   |:--:|:--:|  
+   |输入图片尺寸|（512, 512）|
+   |训练集数量|202张|
+   |验证集数量|66张|
+   |测试集数量|67张|
+   |类别数(含背景)|2|  
+
+* 训练参数：
+   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|  
+   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
+* 测试结果:
+  
+   |实验编号|IOU|Acc|
+   |:--:|:--:|
+   |1|UNet|8|
+   
