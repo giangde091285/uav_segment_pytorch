@@ -37,6 +37,29 @@
 * 精度评定指标：IOU,  Dice-Score,  Acc
   
 ### 配置
+1. 安装Anaconda
+2. 安装CUDA
+3. 创建虚拟环境并切换
+   ```
+     conda create -n [name] python==3.8
+     conda activate [name]
+   ```
+4. 安装gpu版torch(cuda 11.3)
+   ```
+     pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
+   ```
+5. 安装其他所需的包
+   ```
+     pip install wandb
+     pip install pillow
+     pip install tqdm
+     pip install numpy
+   ```
+6. 将图片、标签放在ori_data文件夹
+7. 修改opt.py中的参数，自定义划分和裁剪数据集，自定义超参数
+8. 运行train.py得到权重.pth文件
+9. 使用训练得到的权重文件，运行predict.py进行预测
+   
 ### 测试
 1. ***WHU Building Dataset (Satellite dataset I)***  
    [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
@@ -50,9 +73,9 @@
    |类别数(含背景)|2|  
 
 * 训练参数：
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|  
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
+   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型  
+   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
 * 训练曲线：
 * 可视化：
 * 测试结果:  
@@ -62,24 +85,6 @@
   
 2. ***LoveDA Dataset***  
    [下载](http://junjuewang.top/)
-* 数据集信息：  
-   |参数|具体设置|  
-   |:--:|:--:|  
-   |输入图片尺寸|（512, 512）|
-   |训练集数量|202张|
-   |验证集数量|66张|
-   |测试集数量|67张|
-   |类别数(含背景)|2|  
-
-* 训练参数：
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|  
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|
-* 测试结果:
-  
-   |实验编号|IOU(%)|Acc(%)|    
-   |:--:|:--:|:--:|    
-   |1|96|98|  
 
 ### 参考
 * https://github.com/milesial/Pytorch-UNet
