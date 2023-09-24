@@ -1,8 +1,8 @@
 # segment_pytorch
-### 内容
+## 内容
 * 利用pytorch框架实现最基础的语义分割
 * 在遥感影像数据集上测试
-### 代码结构
+## 代码结构
 ```
 --data_process
   |-- ori_data           # 原始image、mask
@@ -32,11 +32,19 @@
 --predict.py
 
 ```
-* 网络结构：Unet,  ResNet50(encoder)+Unet
-* 损失函数：Cross-Entropy loss,  Dice loss,  [Focal loss](https://github.com/RefineM/FocalLoss_multiclass)
-* 精度评定指标：IOU,  Dice-Score,  Acc
+* 网络结构：
+   * Unet
+   * ResNet50 + Unet
+* 损失函数：
+   * Cross-Entropy loss
+   * Dice loss
+   * [Focal loss](https://github.com/RefineM/FocalLoss_multiclass)
+* 精度评定指标：
+   * IOU
+   * Dice-Score
+   * Acc
   
-### 配置
+## 配置
 1. 安装Anaconda
 2. 安装CUDA
 3. 创建虚拟环境并切换
@@ -55,12 +63,12 @@
      pip install tqdm
      pip install numpy
    ```
-6. 将图片、标签放在ori_data文件夹
-7. 修改opt.py中的参数，自定义划分和裁剪数据集，自定义超参数
-8. 运行train.py得到权重.pth文件
+6. 将数据集的图片、标签放在ori_data文件夹
+7. 修改opt.py中的参数，自定义划分数据集并裁剪图像，自定义各种超参数
+8. 运行train.py，每一个epoch的权重文件（.pth）保存在checkpoint文件夹之下
 9. 使用训练得到的权重文件，运行predict.py进行预测
    
-### 测试
+## 测试
 1. ***WHU Building Dataset (Satellite dataset I)***  
    [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
 * 数据集信息：  
@@ -87,6 +95,6 @@
 2. ***LoveDA Dataset***  
    [下载](http://junjuewang.top/)
 
-### 参考
+## 参考
 * https://github.com/milesial/Pytorch-UNet
 * https://github.com/open-mmlab/mmsegmentation
