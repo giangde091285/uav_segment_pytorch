@@ -22,10 +22,18 @@ from torchsummary import summary
 def train_model(model, device, args):
     
     ##### dataloader #####
-    train_dataloader = DataLoader(CusDataset("train"), 
-                                args.batch_size, shuffle=True, drop_last=False, pin_memory=True)
-    val_dataloader = DataLoader(CusDataset("val"), 
-                                args.batch_size, shuffle=False, drop_last=False, pin_memory=True)
+    if args.dataset_name == 'whu':
+        train_dataloader = DataLoader(WHU("train"), 
+                                    args.batch_size, shuffle=True, drop_last=False, pin_memory=True)
+        val_dataloader = DataLoader(WHU("val"), 
+                                    args.batch_size, shuffle=False, drop_last=False, pin_memory=True)
+    elif args.dataset_name == 'LoveDA':
+        train_dataloader = DataLoader(LoveDA("train"), 
+                                    args.batch_size, shuffle=True, drop_last=False, pin_memory=True)
+        val_dataloader = DataLoader(LoveDA("val"), 
+                                    args.batch_size, shuffle=False, drop_last=False, pin_memory=True)
+    else:
+        raise Exception('no such dataset!')
     
     ##### wandb(log) #####
     # init : Start a new run to track and log to W&B.
@@ -52,7 +60,7 @@ def train_model(model, device, args):
     elif args.loss == 'DiceLoss':
         loss_f = DiceLoss(class_num=args.classes)
     else:
-        loss_f = FocalLoss(alpha=[1,1], gamma=2, class_num=args.classes)
+        loss_f = FocalLoss(alpha=[1,1,1,1,1,1,1], gamma=2, class_num=args.classes)
     ##### amp #####
     scaler = torch.cuda.amp.GradScaler(enabled=True)
 

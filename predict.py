@@ -6,6 +6,7 @@ from utils.dataset_load import *
 from utils.dataset_spilt import * 
 from model.seg_model import *
 from utils.metric import *
+from utils.labelRGB import *
 from opt import *
 import os
 
@@ -19,11 +20,17 @@ import os
 
 def PredictSet(model, device, args):
     model.eval() 
-    test_dataloader = DataLoader(CusDataset("test"), batch_size=1, shuffle=False, drop_last=False, pin_memory=True)
+    if args.dataset_name == 'whu':
+        test_dataloader = DataLoader(WHU("test"), batch_size=1, shuffle=False, drop_last=False, pin_memory=True)
+    elif args.dataset_name == 'LoveDA':
+        test_dataloader = DataLoader(LoveDA("test"), batch_size=1, shuffle=False, drop_last=False, pin_memory=True)
+    else:
+        raise Exception('no such dataset!')
+    
     iou_list = np.zeros(shape=(args.classes),dtype=np.float16)
     acc_list = np.zeros(shape=(args.classes),dtype=np.float16)
+    mt = Metric(if_ignore=True, ignore_idx=-1)
     i = 0
-    mt = Metric()
     for batch in tqdm(test_dataloader, unit='batch', total=len(test_dataloader)):
         images, masks = batch['img'], batch['mask']
         # copy to gpu
@@ -39,17 +46,32 @@ def PredictSet(model, device, args):
             
             if args.ifsave :
                 # (1,c,h,w) -> (1,h,w) -> (h,w)
-                pre_mask_array = np.asarray(pre_mask_tensor.cpu().argmax(dim=1).squeeze(dim=0), dtype=np.uint8)
-                pre_mask_pil = Image.fromarray(pre_mask_array)
+                pre_mask_tensor = pre_mask_tensor.argmax(dim=1).squeeze(dim=0)
+
+                if args.dataset_name == "LoveDA":
+                    masks = masks.squeeze(0) #(h,w)
+                    mask = torch.where(masks==-1, 1, 0).bool()
+                    pre_mask_tensor = torch.masked_fill(pre_mask_tensor, mask, -1) + 1  #[-1,6]->[0,7]
                 
+                pre_mask_array = np.asarray(pre_mask_tensor.cpu(), dtype=np.uint8)
+                pre_mask_pil = Image.fromarray(pre_mask_array)
+
                 if os.path.isdir(args.output_dir):
                     pass
                 else:
                     os.mkdir(args.output_dir)
                 mask_list = os.listdir(r"data_process/dataset/test/mask")
-                pre_mask_pil.save(os.path.join(args.output_dir, ("pre_" + mask_list[i])))
 
-        i += 1
+                if args.if_labelRGB:
+                    type = 'pre_vis'
+                    out_path = os.path.join(args.output_dir, (type + mask_list[i]))
+                    labeltoRGB(pre_mask_array, out_path)
+                else:
+                    type = 'pre_gray'
+                    out_path = os.path.join(args.output_dir, (type + mask_list[i]))
+                    pre_mask_pil.save(out_path)
+
+        i += 1    
 
     iou_list /= len(test_dataloader)
     acc_list /= len(test_dataloader)
