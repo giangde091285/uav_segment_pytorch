@@ -1,8 +1,11 @@
 # segment_pytorch
-## 内容📝
+<a href="https://pytorch.org/"><img src="https://img.shields.io/badge/Torch-1.12.1+cu113-red.svg?logo=PyTorch&style=for-the-badge" /></a>
+<a href="#"><img src="https://img.shields.io/badge/python-v3.8-blue.svg?logo=python&style=for-the-badge" /></a>
+
+## 📝内容
 * 利用pytorch框架实现最基础的语义分割
 * 在遥感影像数据集上测试
-## 代码结构🐳
+## 🐳结构
 ```
 --data_process
   |-- ori_data           # 原始image、mask
@@ -44,7 +47,7 @@
    * Dice-Score
    * Acc
   
-## 开始👋
+## 👋开始
 1. 安装Anaconda
 2. 安装CUDA
 3. 创建虚拟环境并切换
@@ -68,7 +71,7 @@
 8. 运行train.py，每一个epoch的权重文件（.pth）保存在checkpoint文件夹之下
 9. 使用训练得到的权重文件，运行predict.py进行预测
    
-## 测试🔨
+## 🔨测试
 1. ***WHU Building Dataset (Satellite dataset I)***  
    [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
 * 数据集信息：  
@@ -119,7 +122,7 @@
    |:--:|:--:|:--:|:--:|  
    |love-1|96.09|97.99|98.58|  
 
-## 参考📚
+## 📚参考
 * u-net网络结构：
   https://github.com/milesial/Pytorch-UNet
 * LoveDA数据集加载：
