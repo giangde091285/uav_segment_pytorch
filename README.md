@@ -86,8 +86,9 @@
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
   
-* 可视化：
-  ![图片1(1)](https://github.com/RefineM/segment_pytorch/assets/112970219/3622e3c3-eadd-4dae-905a-86d96ac3734e)
+* 可视化：  
+ ![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/bca9a3f9-94b9-4846-8dc8-2b1188a9c1cb)
+
 
 * 测试结果:  
    |实验编号|IOU(%)|Dice(%)|Acc(%)|  
