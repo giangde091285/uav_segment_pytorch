@@ -80,16 +80,12 @@
    |:--:|:--:|:--:|:--:|:--:|   
    |512*512|2|202张|66张|67张|  
 
-  
 * 训练参数：
   
    |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型| 
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
   
-* 训练曲线：
-  ![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/a4fd2895-af13-4d19-b9f2-e6bb958815fd)
-
 * 可视化：
   ![图片1(1)](https://github.com/RefineM/segment_pytorch/assets/112970219/3622e3c3-eadd-4dae-905a-86d96ac3734e)
 
@@ -115,8 +111,6 @@
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |love-1|UNet|16|50|1e-3|AdamW|Cosine|DiceLoss|×|
 
-* 训练曲线：
- 
 * 可视化：
 
 * 测试结果:  
