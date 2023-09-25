@@ -103,14 +103,10 @@ if __name__ == '__main__':
     ##### load ckpt #####
     state_dict = torch.load(args.ckpt_path, map_location=device)
     model.load_state_dict(state_dict)
-
     model.to(device=device)
 
     ##### predict #####
     [iou_list, class_miou, acc_list, class_macc] = PredictSet(model, device, args)
-    # [iou_list, class_miou] = PredictSet(model, device, args)
-    # print("iou={0}\n"
-    #       "miou={1}\n".format(iou_list, class_miou))
     print("iou={0}\n"
           "miou={1}\n"
           "acc={2}\n"
