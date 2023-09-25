@@ -14,7 +14,7 @@ import torchvision.transforms as transforms
 
 """
 
-class CusDataset(data.Dataset):
+class WHU(data.Dataset):
     """
     structure : dataset
                   -- train
@@ -118,26 +118,15 @@ class LoveDA(data.Dataset):
                                          transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # tensor -> zero-norm
                                          ])
         
-        mask_array = np.asarray(mask,dtype=np.uint8)
-        mask_single = np.zeros(shape=(mask_array.shape[0], mask_array.shape[1]), dtype=np.uint8)
-        for i in range(mask_array.shape[0]):
-            for j in range(mask_array.shape[1]):
-                if mask_array[i,j,0] == 255:
-                   mask_single[i,j] = 1
-
-        # mask_single = torch.as_tensor(mask_single, dtype=torch.long)                 
-
-        #img_pr = both_trans(img.copy())
-
-        mask_single = Image.fromarray(mask_single)
-       # mask_pr = both_trans(mask_single)
-
         img_tensor = img_trans(img.copy()) # float32 (C H W)
-        mask_tensor = torch.as_tensor(np.array(mask_single),dtype=torch.long) # long(int64) (H W)
+        mask_tensor = torch.as_tensor(np.array(mask),dtype=torch.long) # long(int64) (H W)
 
-        # # for LoveDA : (ignore nodata:0)
-        # zz_mask = torch.where(mask_tensor > 0, 1, mask_tensor).bool()  # others -> 1  
-        # torch.masked_fill(input=img_tensor, mask= ~zz_mask, value=0)   # 注意要取反  0 —>1 , others->0 
+        # for LoveDA : (ignore nodata)
+        # 1.修改真实mask的值 [0,7] -> [-1,6]
+        mask_tensor = mask_tensor - 1
+        # 2.将img中对应mask的值为-1的部分，设置为0
+        zz_mask = torch.where(mask_tensor == -1, 0, 1).bool() 
+        img_tensor = torch.masked_fill(input=img_tensor, mask=~zz_mask, value=0)   
       
         return {'img' : img_tensor, 'mask' : mask_tensor}
 

@@ -93,8 +93,11 @@ class CropSpiltTool():
             "val：{1}\n"
             "test：{2}".format(train_num, val_num, test_num))
         
-
-    def RandomCropMany(self, root, set, tar_size: int = None, tar_num: int = None):
+    def RandomCropMany(self, 
+                       root: str, 
+                       set: str = 'train', 
+                       tar_size: int = 256, 
+                       tar_num: int = 4):
    
         img_dir = os.path.join(root, set, 'img/')
         mask_dir = os.path.join(root, set, 'mask/')

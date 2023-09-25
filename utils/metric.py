@@ -14,18 +14,29 @@ from torch import nn
 """
 
 class Metric(nn.Module):
-    def __init__(self):
+    def __init__(self, if_ignore: bool = True, ignore_idx:int = None):
         super(Metric, self).__init__()
+        self.ignore_idx = ignore_idx
+        self.if_ignore = if_ignore
 
     def cal_intersect_and_union(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
+        
         # input (N C H W)-> (N H W C)-> (NHW C)-> (NHW)
-
         input = input.permute(0, 2, 3, 1)
         input = torch.flatten(input, 0, 2)
         input = torch.argmax(input, 1)
         input = torch.as_tensor(input, dtype=torch.float32)
         # target (N H W) -> (NHW)
         target = target.flatten(0, 2)
+
+        # 忽略nodata处
+        if self.if_ignore:
+            # 获取target值不为-1的索引
+            mask = ~ target.eq(self.ignore_idx)  # 逐元素对比，如果相同返回true，否则 false
+            # 取值不为-1的元素，组成新target
+            target = target[mask]   # (n')
+            # 取target值不为-1的元素，组成新input
+            input = input[mask]   # (n')
 
         # A ∩ B = TP
         intersect = input[input == target]
@@ -42,7 +53,8 @@ class Metric(nn.Module):
     def IOU(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
         # iou = (A ∩ B)/(A ∪ B) = TP/(TP+FN+FP)
         intersect, union, _, _= self.cal_intersect_and_union(input, target, class_num)
-        iou = intersect/union
+        eps = 1e-4
+        iou = (intersect+eps)/(union+eps)
         return iou # (c)
     
     def DiceScore(self, input: torch.Tensor, target: torch.Tensor, class_num: int):
