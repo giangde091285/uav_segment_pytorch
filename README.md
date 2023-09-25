@@ -1,6 +1,6 @@
-# segment_pytorch
-<a href="https://pytorch.org/"><img src="https://img.shields.io/badge/Torch-1.12.1+cu113-red.svg?logo=PyTorch&style=for-the-badge" /></a>
-<a href="#"><img src="https://img.shields.io/badge/python-v3.8-blue.svg?logo=python&style=for-the-badge" /></a>
+<h1 align="center">segment_pytorch</h1>
+<p align="center"><a href="#"><img src="https://img.shields.io/badge/Torch-1.12.1+cu113-red.svg?logo=PyTorch&style=for-the-badge" /></a>
+<a href="#"><img src="https://img.shields.io/badge/python-v3.8-blue.svg?logo=python&style=for-the-badge" /></a></center></p>
 
 ## 📝内容
 * 利用pytorch框架实现最基础的语义分割
@@ -9,18 +9,18 @@
 ```
 --data_process
   |-- ori_data           # 原始image、mask
-      |-- img
-      |-- mask
+  |   |-- img
+  |   |-- mask
   |-- dataset            # 运行dataset_spilt.py后生成
-      |-- train
-          |-- img
-          |-- mask  
-      |-- val
-          |-- img
-          |-- mask
-      |-- test
-          |-- img
-          |-- mask
+  |   |-- train
+  |   |   |-- img
+  |   |   |-- mask  
+  |   |-- val
+  |   |   |-- img
+  |   |   |-- mask
+  |   |-- test
+  |   |   |-- img
+  |   |   |-- mask
 --model                   # 网络结构
   |-- block.py
   |-- seg_model.py
@@ -73,11 +73,13 @@
    
 ## 🔨测试
 1. ***WHU Building Dataset (Satellite dataset I)***  
-   [下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
-* 数据集信息：  
+   [点击下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
+* 数据集信息：
+   
    |输入图片尺寸|类别数(含背景)|训练集|验证集|测试集|
    |:--:|:--:|:--:|:--:|:--:|   
-   |512*512|2|202张|66张|67张|
+   |512*512|2|202张|66张|67张|  
+
   
 * 训练参数：
   
@@ -86,7 +88,7 @@
    |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
   
 * 训练曲线：
-   ![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/a4fd2895-af13-4d19-b9f2-e6bb958815fd)
+  ![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/a4fd2895-af13-4d19-b9f2-e6bb958815fd)
 
 * 可视化：
   ![图片1(1)](https://github.com/RefineM/segment_pytorch/assets/112970219/3622e3c3-eadd-4dae-905a-86d96ac3734e)
@@ -97,7 +99,7 @@
    |whu-1|96.09|97.99|98.58|  
   
 2. ***LoveDA Dataset***  
-   [下载](http://junjuewang.top/)
+   [点击下载](http://junjuewang.top/)
 * 数据集信息：
   
   （1）将该数据集的train/urban文件夹下的img和mask作为原始数据，进行数据集划分和裁剪  
