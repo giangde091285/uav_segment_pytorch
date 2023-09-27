@@ -59,8 +59,10 @@ def train_model(model, device, args):
         loss_f = nn.CrossEntropyLoss()
     elif args.loss == 'DiceLoss':
         loss_f = DiceLoss(class_num=args.classes)
-    else:
+    elif args.loss == 'FocalLoss':
         loss_f = FocalLoss(alpha=[1,1,1,1,2,2,1], gamma=2, class_num=args.classes)
+    else:
+        raise Exception('no such loss function !')
     ##### amp #####
     scaler = torch.cuda.amp.GradScaler(enabled=True)
 

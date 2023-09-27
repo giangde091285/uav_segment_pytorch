@@ -5,7 +5,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     
     # dataset
-    parser.add_argument('--dataset_name', type=str, default='LoveDA')
+    parser.add_argument('--dataset_name', type=str, default='LoveDA', choices=['whu', 'LoveDA'])
     parser.add_argument('--if_split', type=bool, default=False)
     parser.add_argument('--if_crop', type=bool, default=False)
     parser.add_argument('--if_enhance', type=bool, default=False)
@@ -21,11 +21,11 @@ def get_args():
 
     # train
     parser.add_argument('--proj', type=str, default='loveda')
-    parser.add_argument('--model', type=str, default='U_net')
+    parser.add_argument('--model', type=str, default='U_net', choices=['U_net', 'ResUNet'])
     parser.add_argument('--device', type=str, default='cuda:0')
-    parser.add_argument('--optimizer', type=str, default='AdamW')
-    parser.add_argument('--scheduler', type=str, default='Cosine')
-    parser.add_argument('--loss', type=str, default='focalloss')
+    parser.add_argument('--optimizer', type=str, default='AdamW', choices=['RMSprop', 'AdamW', 'Adam'])
+    parser.add_argument('--scheduler', type=str, default='Cosine', choices=['Plateau', 'Step', 'Cosine'])
+    parser.add_argument('--loss', type=str, default='FocalLoss', choices=['celoss', 'DiceLoss', 'FocalLoss'])
     parser.add_argument('--if_pre_ckpt', type=bool, default=False)
     parser.add_argument('--pre_ckpt_path', type=str, default='./ckpt_history/new4_checkpoint_epoch_32.0.pth')
 
@@ -41,7 +41,6 @@ def get_args():
     parser.add_argument('--ifsave', type=str, default=False)
     parser.add_argument('--output_dir', type=str, default='./output/')
     parser.add_argument('--if_labelRGB', type=bool, default=True)
-   
 
 
     return parser.parse_args()
