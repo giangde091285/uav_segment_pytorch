@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import DataLoader
 from utils.dataset_load import * 
-from utils.dataset_spilt import * 
+from utils.dataset_split import * 
 from model.seg_model import *
 from utils.metric import *
 from utils.labelRGB import *
@@ -103,10 +103,14 @@ if __name__ == '__main__':
     ##### load ckpt #####
     state_dict = torch.load(args.ckpt_path, map_location=device)
     model.load_state_dict(state_dict)
+
     model.to(device=device)
 
     ##### predict #####
     [iou_list, class_miou, acc_list, class_macc] = PredictSet(model, device, args)
+    # [iou_list, class_miou] = PredictSet(model, device, args)
+    # print("iou={0}\n"
+    #       "miou={1}\n".format(iou_list, class_miou))
     print("iou={0}\n"
           "miou={1}\n"
           "acc={2}\n"

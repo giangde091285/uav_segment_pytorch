@@ -3,7 +3,7 @@ from torch import nn
 import os
 from torch.utils.data import DataLoader
 from utils.dataset_load import * 
-from utils.dataset_spilt import * 
+from utils.dataset_split import * 
 from utils.optimizer import *
 from utils.metric import *
 from utils.loss import *
@@ -60,7 +60,7 @@ def train_model(model, device, args):
     elif args.loss == 'DiceLoss':
         loss_f = DiceLoss(class_num=args.classes)
     else:
-        loss_f = FocalLoss(alpha=[1,1,1,1,1,1,1], gamma=2, class_num=args.classes)
+        loss_f = FocalLoss(alpha=[1,1,1,1,2,2,1], gamma=2, class_num=args.classes)
     ##### amp #####
     scaler = torch.cuda.amp.GradScaler(enabled=True)
 
@@ -156,11 +156,14 @@ if __name__ == '__main__':
         print(" train use cpu ")
     
     ##### spilt_set ##### 
-    if args.if_spilt :
-        spilttool = CropSpiltTool()
-        spilttool.SpiltDataset(train_scale=args.train_scale, val_scale=args.val_scale)
+    if args.if_split :
+        splittool = CropSplitTool()
+        splittool.SplitDataset(train_scale=args.train_scale, val_scale=args.val_scale)
         if args.if_crop:
-            spilttool.CropDataset(args.tar_size, args.tar_num)
+            splittool.CropDataset(args.tar_size, args.tar_num)
+        if args.if_enhance:
+            splittool.DataEnhance(args.enhance_scale)
+
 
     ##### model #####
     if args.model == 'U_net':
