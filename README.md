@@ -85,10 +85,6 @@
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
   
-* 可视化：  
- ![图片1](https://github.com/RefineM/segment_pytorch/assets/112970219/bca9a3f9-94b9-4846-8dc8-2b1188a9c1cb)
-
-
 * 测试结果:  
    |实验编号|IOU(%)|Dice(%)|Acc(%)|  
    |:--:|:--:|:--:|:--:|  
@@ -110,14 +106,6 @@
    |编号|网络|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|预训练模型| 
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |love-1|UNet|8|100|1e-3|AdamW|Cosine|FocalLoss|×|
-
-* 可视化：
-  
-   |编号|原图|真实标签|预测图|
-   |:--:|:--:|:--:|:--:|
-   |1384.png|![1384](https://github.com/RefineM/segment_pytorch/assets/112970219/92ac77dd-2094-4817-aa81-8d66d6d0f52b)|![vis1384](https://github.com/RefineM/segment_pytorch/assets/112970219/0d59cb27-0adf-4f75-adfe-a8735241900a)|![pre_vis1384](https://github.com/RefineM/segment_pytorch/assets/112970219/96e5fd04-90bd-4f28-ae3e-954161877950)|  
-   |1890.png|![1890](https://github.com/RefineM/segment_pytorch/assets/112970219/1a9dec8f-c09b-4ab0-8b0f-fa214662905b)|![vis1890](https://github.com/RefineM/segment_pytorch/assets/112970219/ed567899-f1fd-4a73-b116-76b6bbe286e9)|![pre_vis1890](https://github.com/RefineM/segment_pytorch/assets/112970219/cefeb344-a972-44bf-bc67-4bdb9c0c6453)|
-   |1742.png|![1742](https://github.com/RefineM/segment_pytorch/assets/112970219/e9256ca0-0f79-4e96-af4e-45fbba4bd458)|![vis1742](https://github.com/RefineM/segment_pytorch/assets/112970219/9a13777f-a66e-490d-bb98-1a3a5ab7c4bc)|![pre_vis1742](https://github.com/RefineM/segment_pytorch/assets/112970219/370edef5-243e-4ac5-acbb-f94ea20b98a2)|
 
 * 测试结果:
   
