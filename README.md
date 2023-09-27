@@ -81,7 +81,7 @@
 
 * 训练参数：
   
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型| 
+   |编号|网络|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|预训练模型| 
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
   
@@ -107,7 +107,7 @@
 
 * 训练参数：
   
-   |实验编号|网络结构|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|使用预训练模型| 
+   |编号|网络|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|预训练模型| 
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
    |love-1|UNet|8|100|1e-3|AdamW|Cosine|FocalLoss|×|
 
