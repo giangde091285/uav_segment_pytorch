@@ -60,9 +60,9 @@ def train_model(model, device, args):
     elif args.loss == 'DiceLoss':
         loss_f = DiceLoss(class_num=args.classes)
     elif args.loss == 'FocalLoss':
-        loss_f = FocalLoss(alpha=[1,1,1,1,2,2,1], gamma=2, class_num=args.classes)
+        loss_f = FocalLoss(alpha=[1,1,1,1,1,1,1], gamma=2, class_num=args.classes)
     else:
-        raise Exception('no such loss function !')
+        raise Exception('no such loss function !') 
     ##### amp #####
     scaler = torch.cuda.amp.GradScaler(enabled=True)
 
@@ -143,10 +143,29 @@ def train_model(model, device, args):
         torch.save(state_dict, str( os.path.join(checkpoint_path , 'checkpoint_epoch_{}.pth'.format(ep))))
 
 
+def seed_fix(seed):
+    
+    seed = int(seed)
+    # python random
+    random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
+    # numpy
+    np.random.seed(seed)
+    # torch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.enabled = False
+
+
+
 if __name__ == '__main__':
     
     ##### get args #####
     args = get_args()
+    seed_fix(42)
 
     ##### set device #####
     torch.cuda.empty_cache()
