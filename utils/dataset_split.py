@@ -4,11 +4,16 @@ from PIL import Image
 import random
 import glob
 from tqdm import tqdm
-from PIL import ImageFile
 import torchvision as tv
-import torchmetrics
 
+"""
+    dataset_split
 
+    * SplitDataset (split into train / val / test set)
+    * CropDataset  (only for train / val set)
+    * DataEnhance  (only for train set)
+
+"""
 class CropSplitTool():
     def __init__(self) -> None:
         # read images and masks from original path
@@ -64,8 +69,8 @@ class CropSplitTool():
         test_num = 0
         cal = 0
 
-        print("******** start split dataset ******** \n"
-            "train:val={0}：{1}"
+        print("START -- Split Dataset \n"
+              " train : val = {0} ： {1}"
             .format(train_scale, val_scale))
 
         with tqdm(total=len(new_list)) as pbar:
@@ -91,7 +96,7 @@ class CropSplitTool():
                 cal += 1
                 pbar.update(1)
 
-        print("******** done! ******** \n"
+        print("DONE -- Split Dataset \n"
             "train：{0}\n"
             "val：{1}\n"
             "test：{2}".format(train_num, val_num, test_num))
@@ -114,8 +119,8 @@ class CropSplitTool():
         ori_len = len(ori_img_name)
 
         i = 0
-        print(" ******** start crop ******** "
-            "\n target set = {0}"
+        print(
+            " target set = {0}"
             "\n target size={1}*{1}"
             "\n original size={2}*{3}"
             "\n target num={4}"
@@ -146,24 +151,25 @@ class CropSplitTool():
                 pbar.update(1)
         
         # delete original imgs
-        print(" ******** delete original imgs ******** ")
+        print("delete original imgs")
         for files in ori_img_name:
             os.remove(os.path.join(img_dir,files))
         for files in ori_mask_name:
             os.remove(os.path.join(mask_dir,files))
-        print(" ******** done! ********* ")
 
     def CropDataset(self, tar_size: int = None, tar_num: int = None):
         
         dir = r'./data_process/dataset/'
+        print(" START -- Crop train/val Images ")
         self.RandomCropMany(dir,'train',tar_size, tar_num)
         self.RandomCropMany(dir,'val',tar_size, tar_num)
+        print(" DONE -- Crop train/val Images ")
     
 
     # only for train set
     def DataEnhance(self, factor:float):
 
-        # 训练集img和mask原始路径
+        # original path of train set
         img_dir = r"./data_process/dataset/train/img/"
         mask_dir = r"./data_process/dataset/train/mask/"
 
@@ -173,11 +179,11 @@ class CropSplitTool():
         img_path = glob.glob(img_dir+"*")
         mask_path = glob.glob(mask_dir+"*")
 
-        # 按照一定比例，随机抽取需要应用数据增强的图片，记录在img_list中的idx
+        # according to @factor，randomly choose imgs that apply data enhance，record their index in img_list
         idx_num = int(len(img_list) * factor)
         idx_list = random.sample(range(0,(len(img_list)-1)), idx_num)
 
-        # 需要数据增强的图片路径
+        # the path of imgs and masks that apply data enhance
         choice_img_list = []
         choice_mask_list = []
         choice_img_path = []
@@ -189,13 +195,15 @@ class CropSplitTool():
                 choice_img_path.append(img_path[i])
                 choice_mask_path.append(mask_path[i])
 
-        # 定义增强方式
+        # enhance methods
         transpose_img = tv.transforms.Compose([tv.transforms.GaussianBlur(kernel_size=3)])
         transpose_both = tv.transforms.Compose([tv.transforms.RandomHorizontalFlip(p=1)])
         
+        print("******** enhance train set *********"
+              "\n factor: {0}".format(factor))
         with tqdm(total=idx_num) as pbar:
             for i in range(idx_num):
-                # 读取原始PIL
+                # read original PIL Images
                 img = Image.open(choice_img_path[i])
                 mask = Image.open(choice_mask_path[i])
 
@@ -204,7 +212,7 @@ class CropSplitTool():
                 img = transpose_both(img)
                 mask = transpose_both(mask)
 
-                # 保存
+                # save
                 img.save(img_dir + choice_img_list[i].split(".")[0] + "_trans." + choice_img_list[i].split(".")[1])
                 mask.save(mask_dir + choice_mask_list[i].split(".")[0] + "_trans." + choice_mask_list[i].split(".")[1])
 
