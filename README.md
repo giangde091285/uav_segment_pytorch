@@ -1,17 +1,14 @@
-<h1 align="center">segment_pytorch</h1>
-<p align="center"><a href="#"><img src="https://img.shields.io/badge/Torch-1.12.1+cu113-red.svg?logo=PyTorch&style=for-the-badge" /></a>
-<a href="#"><img src="https://img.shields.io/badge/python-v3.8-blue.svg?logo=python&style=for-the-badge" /></a></center></p>
+<h1>Segment_Pytorch</h1>
 
-## 📝内容
-* 利用pytorch框架实现最基础的语义分割
-* 在遥感影像数据集上测试
-## 🐳结构
+<h4> Simplely implement image semantic segmentation based on pytorch.</h4>
+
+## Code Structure
 ```
 --data_process
-  |-- ori_data           # 原始image、mask
+  |-- ori_data         
   |   |-- img
   |   |-- mask
-  |-- dataset            # 运行dataset_spilt.py后生成
+  |-- dataset            
   |   |-- train
   |   |   |-- img
   |   |   |-- mask  
@@ -21,102 +18,114 @@
   |   |-- test
   |   |   |-- img
   |   |   |-- mask
---model                   # 网络结构
+--model                   
   |-- block.py
+  |-- encoder.py
   |-- seg_model.py
 --utils
-  |-- dataset_load.py     # 数据预处理、数据加载
-  |-- dataset_spilt.py    # 划分数据集
-  |-- loss.py             # 损失函数
-  |-- metric.py           # 精度评定
-  |-- optimizer.py        # 优化器和学习率调整
+  |-- dataset_load.py    
+  |-- dataset_spilt.py   
+  |-- loss.py            
+  |-- metric.py           
+  |-- optimizer.py
+  |-- labelRGB.py       
 --opt.py
 --train.py
 --predict.py
 
 ```
-* 网络结构：
+
+* net：
    * Unet
-* 损失函数：
-   * Cross-Entropy loss
+   * Resnet
+* loss function：
+   * Cross-Entropy loss 
    * Dice loss
    * [Focal loss](https://github.com/RefineM/FocalLoss_multiclass)
-* 精度评定指标：
+* metric：
    * IOU
    * Dice-Score
-   * Acc
-  
-## 👋开始
-1. 安装Anaconda
-2. 安装CUDA
-3. 创建虚拟环境并切换
+   * Accuracy
+   * Confusion Matrix
+
+## Environment Configuration
+1. install Anaconda
+2. install CUDA
+3. create and activate virtual environment  
    ```
      conda create -n [name] python==3.8
      conda activate [name]
    ```
-4. 安装gpu版torch(cuda 11.3)
+4. install torch_gpu (cuda 11.3)
    ```
      pip install torch==1.12.1+cu113 torchvision==0.13.1+cu113 torchaudio==0.12.1 --extra-index-url https://download.pytorch.org/whl/cu113
    ```
-5. 安装其他所需的包
+5. install other packages
    ```
-     pip install wandb
+     pip install wandb  
      pip install pillow
      pip install tqdm
      pip install numpy
    ```
-6. 将数据集的图片、标签放在ori_data文件夹
-7. 修改opt.py中的参数，自定义划分数据集并裁剪图像，自定义各种超参数
-8. 运行train.py，每一个epoch的权重文件（.pth）保存在checkpoint文件夹之下
-9. 使用训练得到的权重文件，运行predict.py进行预测
    
-## 🔨测试
-1. ***WHU Building Dataset (Satellite dataset I)***  
-   [点击下载](http://gpcv.whu.edu.cn/data/building_dataset.html)
-* 数据集信息：
+## Dataset
+the structure of dataset is:
+```
+  |-- dataset            
+  |   |-- train
+  |   |   |-- img
+  |   |   |-- mask  
+  |   |-- val
+  |   |   |-- img
+  |   |   |-- mask
+  |   |-- test
+  |   |   |-- img
+  |   |   |-- mask
+```
+You can put your images under `data_process/ori_data/img` and put your masks under `data_process/ori_data/mask`, then change the arguments in `opt.py`
+* Randomly devide the original dataset into train/val/test dataset in centain proportion:
+    * Firstly set `--if_split` to `True`
+    * Then set the scale of train/val/test dataset by changing the value of `--train_scale` and `--val_scale` (the values range from 0 to 1)
+        *  if `--train_scale` is 0.8 and `--val_scale` is 0.1, the scale of test set is automatically set to 0.1
+* (Optional) If you want to trim the imgs and masks from train and val set into a specified size:
+    * Firstly set `--if_crop` to `True`
+    * Then set the target size of images by changing the value of `--target_size`. For example, 256
+    * And set the amount of each large image cropped into small images by changing the value of `--target_num`. For example, 8
+* (Optional) To prevent overfiting, you can apply data enhancement to train dataset:
+    * set `--if_enhance` to `True`
+    * set the scale of images that apply enhancement by changing `--enhance_scale` (the value ranges from 0 to 1)
+      
+If you need to change the methods of implementing the above functions, you can modify the class `CropSplitTool` in `dataset_spilt.py`.
+
+## Train
+1. change the arguments in `opt.py`
+   * To use gpu, change `--device` to ' cuda:id '
+   * To use pre-trained weights, change `--if_pre_ckpt` to `True` , and set `--pre_ckpt_path`
+2. run `train.py`
+3. the `checkpoint_epoch_x.pth` of each epoch will be put under the folder `checkpoint`
+
+## Predict
+1. change the arguments in `opt.py`
+   * set the path of weight file `--ckpt_path`
+   * if you need to save predicted results, please set `--if_save` to `True`, and modify the path `--output_dir` 
+   * if you want to output RGB results, please modify color maps in `labelRGB.py` and set `--if_labelRGB` to `True`  
+2. run `predict.py`
    
-   |输入图片尺寸|类别数(含背景)|训练集|验证集|测试集|
+## Test
+1. ***WHU Building Dataset (Satellite dataset I)***  [Download](http://gpcv.whu.edu.cn/data/building_dataset.html)
+
+   |size|classnum|train|val|test|
    |:--:|:--:|:--:|:--:|:--:|   
-   |512*512|2|202张|66张|67张|  
+   |512*512|2|202|66|67|  
 
-* 训练参数：
+   |no.|net|batchsize|epoch|lr|optimizer|lr-scheduler|loss|IOU(%)|Dice(%)|Acc(%)|  
+   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|  
+   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|96.09|97.99|98.58|  
   
-   |编号|网络|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|预训练模型| 
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |whu-1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|×|
-  
-* 测试结果:  
-   |实验编号|IOU(%)|Dice(%)|Acc(%)|  
-   |:--:|:--:|:--:|:--:|  
-   |whu-1|96.09|97.99|98.58|  
-  
-2. ***LoveDA Dataset***  
-   [点击下载](http://junjuewang.top/)
-* 数据集信息：
-  
-  （1）将该数据集的train/urban文件夹下的img和mask作为原始数据，进行数据集划分和裁剪  
-  （2）设置opt.py中的参数，以0.7：0.1：0.2的比例划分训练、验证、测试集，将训练和验证集的每张原始影像由（1024，1024）随机裁剪为4张（256，256）的小图
-    
-   |输入图片尺寸|类别数(含背景)|训练集|验证集|
-   |:--:|:--:|:--:|:--:|
-   |256*256|7|3240张|460张|
-
-* 训练参数：
-  
-   |编号|网络|batchsize|epoch|learning rate|optimizer|lr-scheduler|loss|预训练模型| 
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |love-1|UNet|8|100|1e-3|AdamW|Cosine|FocalLoss|×|
-
-* 测试结果:
-  
-   |实验编号|背景|建筑物|道路|水体|荒地|森林|农田|mIOU(%)| 
-   |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
-   |love-1|59.10|54.30|49.30|69.24|35.96|27.03|68.16|51.86|
-  
-## 📚参考
-* u-net网络结构：
+## Reference
+* u-net：
   https://github.com/milesial/Pytorch-UNet
-* LoveDA数据集加载：
+* LoveDA：
   https://github.com/Junjue-Wang/LoveDA
-* 损失函数和精度评定：
+* loss func and metric：
   https://github.com/open-mmlab/mmsegmentation
