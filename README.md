@@ -120,7 +120,9 @@ If you need to change the methods of implementing the above functions, you can m
 
    |no.|net|batchsize|epoch|lr|optimizer|lr-scheduler|loss|IOU(%)|Dice(%)|Acc(%)|  
    |:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|  
-   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|96.09|97.99|98.58|  
+   |1|UNet|8|100|1e-3|AdamW|Cosine|CE-loss|96.09|97.99|98.58|
+
+   [result (google drive)](https://drive.google.com/drive/folders/1LNUMpvLCm_GKu17c7Mn4Dvl9S5fp0JvK?usp=drive_link)
   
 ## Reference
 * u-net：
